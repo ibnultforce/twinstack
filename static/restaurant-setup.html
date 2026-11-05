@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restaurant Site Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* The app's own look (Twinstack's zinc greys, black buttons) on the left; the restaurant's site,
+     themed by its atmosphere answer, in the live preview on the right. */
+  --bg: #f4f4f5;
+  --surface: #ffffff;
+  --ink: #18181b;
+  --muted: #71717a;
+  --line: #e4e4e7;
+  --soft: #f4f4f5;
+  --accent: #18181b;
+  --on-accent: #ffffff;
+  --demo: #b45309;
+  --demo-soft: #fef3c7;
+  --good: #047857;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #09090b; --surface: #18181b; --ink: #fafafa; --muted: #a1a1aa; --line: #27272a; --soft: #27272a;
+    --accent: #fafafa; --on-accent: #18181b; --demo: #fbbf24; --demo-soft: #422006; --good: #34d399;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #09090b; --surface: #18181b; --ink: #fafafa; --muted: #a1a1aa; --line: #27272a; --soft: #27272a;
+  --accent: #fafafa; --on-accent: #18181b; --demo: #fbbf24; --demo-soft: #422006; --good: #34d399;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { max-width: 1240px; margin: 0 auto; padding: 20px 16px 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.top h1 { font-size: 20px; }
+.top p { margin: 0; color: var(--muted); font-size: 13px; flex-basis: 100%; }
+.top .actions { margin-left: auto; display: flex; gap: 8px; }
+
+.layout { max-width: 1240px; margin: 0 auto; padding: 16px; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 980px) { .layout { grid-template-columns: minmax(0, 540px) minmax(0, 1fr); align-items: start; } .preview-col { position: sticky; top: 16px; } }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.06); }
+.wizard { padding: 24px; }
+@media (min-width: 560px) { .wizard { padding: 32px; } }
+
+.dots { display: flex; gap: 6px; }
+.dots span { height: 4px; flex: 1; border-radius: 4px; background: var(--line); }
+.dots span.on { background: var(--accent); }
+.stepno { margin: 20px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.wizard h2 { font-size: 26px; letter-spacing: -0.01em; }
+.lead { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
+
+.fields { display: grid; gap: 16px; margin-top: 20px; }
+.field label, .field .label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.field .hint { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.row2 { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 480px) { .row2 { grid-template-columns: 1fr 1fr; } }
+input[type="text"], input[type="url"], input[type="email"], input[type="tel"], input[type="time"], textarea, select {
+  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+textarea { resize: vertical; min-height: 84px; }
+input:focus, textarea:focus, select:focus { border-color: var(--muted); outline: none; box-shadow: 0 0 0 3px var(--soft); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: var(--demo-soft); color: var(--demo); white-space: nowrap; }
+.detect { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--soft); font-size: 14px; }
+.detect strong { font-weight: 600; }
+.detect .ok { color: var(--good); font-weight: 600; }
+
+.dishes { display: grid; gap: 8px; }
+.dish { display: grid; gap: 8px; grid-template-columns: 1fr; padding: 10px; border: 1px solid var(--line); border-radius: 12px; }
+@media (min-width: 480px) { .dish { grid-template-columns: 1.1fr 1.4fr 90px auto; align-items: center; } }
+.dish .tools { display: flex; gap: 6px; align-items: center; }
+.icon-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 13px; }
+
+.hours { display: grid; gap: 6px; }
+.hour { display: grid; grid-template-columns: 44px 1fr 1fr auto; gap: 8px; align-items: center; font-size: 14px; font-variant-numeric: tabular-nums; }
+.hour.closed input[type="time"] { opacity: 0.35; }
+.hour label { font-size: 13px; color: var(--muted); display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+
+.checks { display: grid; gap: 8px; }
+.check { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.check input[type="url"] { grid-column: 2; }
+
+.drop { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 18px; border: 2px dashed var(--line); border-radius: 14px; text-align: center; cursor: pointer; font-size: 14px; }
+.drop:hover { border-color: var(--muted); }
+.drop small { color: var(--muted); }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; margin-top: 10px; }
+.thumb { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--soft); }
+.thumb img, .thumb .art { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb button { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgb(0 0 0 / 0.6); color: #fff; cursor: pointer; }
+.thumb .badge { position: absolute; left: 4px; bottom: 4px; }
+
+.nav { display: flex; gap: 8px; align-items: center; margin-top: 28px; }
+.btn { border-radius: 10px; padding: 10px 18px; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: var(--surface); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); margin-left: auto; }
+.btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.small { padding: 6px 12px; font-size: 13px; }
+.error { color: #b91c1c; font-size: 13px; margin-top: 8px; }
+
+.summary { display: grid; gap: 10px; margin-top: 20px; }
+.sum { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.sum header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.sum h3 { font-size: 15px; }
+.sum header button { margin-left: auto; }
+.sum dl { margin: 0; display: grid; grid-template-columns: 120px 1fr; gap: 2px 12px; font-size: 13px; }
+.sum dt { color: var(--muted); }
+.sum dd { margin: 0; overflow-wrap: anywhere; }
+.missing { color: var(--demo); }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 20px; padding: 4px; background: var(--soft); border-radius: 10px; }
+.tabs button { flex: 1; border: 0; background: none; border-radius: 7px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--surface); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+pre { margin: 8px 0 0; padding: 12px; background: var(--soft); border-radius: 10px; font-size: 12px; line-height: 1.55; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.progress { list-style: none; padding: 0; margin: 24px auto 0; display: grid; gap: 12px; max-width: 360px; }
+.progress li { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+.progress li.now { color: var(--ink); font-weight: 600; }
+.progress li.done { color: var(--ink); }
+.progress .mark { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: var(--line); flex: none; }
+.progress li.done .mark { background: var(--good); color: #fff; }
+.progress li.now .mark { border: 2px solid var(--line); border-top-color: var(--ink); background: none; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .progress li.now .mark { animation: none; border-top-color: var(--line); } }
+.center { text-align: center; }
+
+/* ------------------------------------------------------------ the preview */
+.preview-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.preview-head .dotrow { display: flex; gap: 5px; }
+.preview-head .dotrow i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: block; }
+.preview-head .url { flex: 1; background: var(--soft); border-radius: 6px; padding: 3px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site { --p-bg: #f7f1e8; --p-ink: #2a1e16; --p-muted: #7a6656; --p-accent: #a8471f; --p-card: #fffaf3; --p-font: "Fraunces", Georgia, serif;
+  background: var(--p-bg); color: var(--p-ink); border-radius: 0 0 18px 18px; overflow: hidden; font-size: 13px; }
+.site.modern { --p-bg: #f5f5f3; --p-ink: #111111; --p-muted: #6b6b6b; --p-accent: #111111; --p-card: #ffffff; --p-font: "Bricolage Grotesque", system-ui, sans-serif; }
+.site.lively { --p-bg: #fff6d8; --p-ink: #1f1a10; --p-muted: #6f6347; --p-accent: #e2552d; --p-card: #fffdf5; --p-font: "Bricolage Grotesque", system-ui, sans-serif; }
+.site.elegant { --p-bg: #15130f; --p-ink: #f2ead8; --p-muted: #b3a88f; --p-accent: #c9a964; --p-card: #1f1c16; --p-font: "Fraunces", Georgia, serif; }
+.site h3, .site h4 { font-family: var(--p-font); margin: 0; }
+.s-header { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid color-mix(in srgb, var(--p-ink) 12%, transparent); }
+.s-logo { display: flex; align-items: center; gap: 8px; font-family: var(--p-font); font-weight: 700; font-size: 16px; }
+.s-logo img { height: 26px; width: auto; }
+.s-nav { margin-left: auto; display: flex; gap: 14px; color: var(--p-muted); }
+.s-btn { background: var(--p-accent); color: var(--p-bg); border-radius: 999px; padding: 6px 12px; font-weight: 600; white-space: nowrap; }
+.site.elegant .s-btn { color: #15130f; }
+@media (max-width: 520px) { .s-nav { display: none; } .s-header .s-btn { margin-left: auto; } }
+.s-hero { display: grid; gap: 16px; padding: 22px 18px; align-items: center; }
+@media (min-width: 620px) { .s-hero { grid-template-columns: 1.1fr 1fr; } }
+.s-hero h3 { font-size: 28px; line-height: 1.1; }
+.s-hero p { color: var(--p-muted); margin: 8px 0 14px; max-width: 46ch; }
+.s-hero .ctas { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.s-ghost { border: 1px solid color-mix(in srgb, var(--p-ink) 25%, transparent); border-radius: 999px; padding: 6px 12px; }
+.s-photo { aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; position: relative; }
+.s-photo img, .s-photo .art { width: 100%; height: 100%; object-fit: cover; display: block; }
+.s-photo .badge { position: absolute; left: 8px; bottom: 8px; }
+.s-section { padding: 16px 18px; }
+.s-section > h4 { font-size: 17px; margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+.s-dishes { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.s-dish { background: var(--p-card); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+.s-dish .top-line { display: flex; gap: 8px; align-items: baseline; }
+.s-dish b { font-family: var(--p-font); font-size: 14px; }
+.s-dish .price { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--p-accent); font-weight: 600; }
+.s-dish span { color: var(--p-muted); font-size: 12px; }
+.s-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.s-tags span { border: 1px solid color-mix(in srgb, var(--p-ink) 20%, transparent); border-radius: 999px; padding: 2px 9px; font-size: 11px; color: var(--p-muted); }
+.s-visit { display: grid; gap: 12px; }
+@media (min-width: 620px) { .s-visit { grid-template-columns: 1fr 1fr; } }
+.s-box { background: var(--p-card); border-radius: 12px; padding: 12px 14px; }
+.s-box table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.s-box td { padding: 2px 0; }
+.s-box td:last-child { text-align: right; color: var(--p-muted); }
+.s-story { display: grid; gap: 6px; }
+.s-story p { margin: 0; color: var(--p-muted); }
+.s-footer { padding: 16px 18px; display: grid; gap: 10px; font-size: 12px; color: var(--p-muted); border-top: 1px solid color-mix(in srgb, var(--p-ink) 12%, transparent); }
+@media (min-width: 620px) { .s-footer { grid-template-columns: 1.2fr 1fr 1fr; } }
+.s-footer b { color: var(--p-ink); display: block; margin-bottom: 2px; }
+.s-empty { color: var(--p-muted); font-style: italic; }
+.preview-note { padding: 10px 14px; font-size: 12px; color: var(--muted); }
+
+/* ------------------------------------------------- the journey's other screens */
+.journey { max-width: 1240px; margin: 12px auto 0; padding: 0 16px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.journey span { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.journey span.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.journey span.done { color: var(--ink); }
+[hidden] { display: none !important; }
+
+.appbar { display: flex; align-items: center; gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.appbar .brand { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.appbar .credits { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dash { max-width: 1240px; margin: 16px auto; padding: 0 16px; }
+.dash .card { overflow: hidden; }
+.dash-body { padding: 28px 24px 36px; display: grid; gap: 18px; }
+.dash-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.dash-head h2 { font-size: 24px; }
+.dash-head .btn { margin-left: auto; }
+.empty { border: 2px dashed var(--line); border-radius: 16px; padding: 36px 20px; text-align: center; display: grid; gap: 8px; justify-items: center; }
+.empty p { margin: 0; color: var(--muted); max-width: 46ch; }
+.sites { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.site-card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; }
+.site-card .thumb-site { height: 120px; overflow: hidden; pointer-events: none; }
+.site-card .thumb-site .site { transform: scale(0.5); transform-origin: top left; width: 200%; }
+.site-card .meta { padding: 12px 14px; display: grid; gap: 2px; border-top: 1px solid var(--line); }
+.site-card .meta small { color: var(--muted); }
+.site-card .meta .btn { justify-self: start; margin-top: 8px; }
+
+.modal-bg { position: fixed; inset: 0; background: rgb(0 0 0 / 0.45); display: grid; place-items: center; padding: 16px; z-index: 10; }
+.modal { width: 100%; max-width: 500px; padding: 24px; display: grid; gap: 18px; max-height: calc(100% - 32px); overflow-y: auto; }
+.modal-top { display: flex; gap: 12px; align-items: flex-start; }
+.modal-top h2 { font-size: 19px; }
+.modal-top p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.modal-top .icon-btn { margin-left: auto; flex: none; border: 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--soft); border-radius: 10px; font-size: 14px; }
+.seg button { border: 0; background: none; border-radius: 7px; padding: 7px 10px; cursor: pointer; color: var(--muted); }
+.seg button[aria-checked="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+details.more { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+details.more summary { cursor: pointer; }
+details.more .field { margin-top: 10px; }
+.mono { font-family: ui-monospace, Consolas, monospace; }
+.repos { display: grid; gap: 6px; }
+.repo { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; cursor: pointer; background: var(--surface); text-align: left; }
+.repo[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.repo small { margin-left: auto; color: var(--muted); }
+.note { border-radius: 10px; padding: 10px 12px; font-size: 13px; background: var(--soft); }
+
+.editor { max-width: 1400px; margin: 16px auto; padding: 0 16px; }
+.editor .card { overflow: hidden; }
+.editor-grid { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 640px; }
+@media (min-width: 1100px) { .editor-grid { grid-template-columns: 180px minmax(0, 1fr) 360px; } }
+.side { border-right: 1px solid var(--line); padding: 14px 10px; display: none; gap: 2px; align-content: start; font-size: 14px; }
+@media (min-width: 1100px) { .side { display: grid; } }
+.side span { padding: 7px 10px; border-radius: 8px; color: var(--muted); }
+.side span.on { background: var(--soft); color: var(--ink); font-weight: 600; }
+.stage { padding: 16px; background: var(--soft); display: grid; gap: 10px; align-content: start; }
+.stage .card { position: relative; }
+.stage .building { position: absolute; inset: 41px 0 0; display: grid; place-items: center; background: color-mix(in srgb, var(--surface) 82%, transparent); font-size: 14px; color: var(--muted); text-align: center; padding: 20px; }
+.starter { padding: 40px 24px; background: #fff; color: #18181b; font-size: 13px; }
+.starter b { display: block; font-size: 20px; margin-bottom: 6px; }
+.ask { border-left: 1px solid var(--line); display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+@media (max-width: 1099px) { .ask { border-left: 0; border-top: 1px solid var(--line); } }
+.ask-head { padding: 12px 14px; border-bottom: 1px solid var(--line); font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.ask-head small { margin-left: auto; color: var(--muted); font-weight: 400; }
+.ask-log { padding: 14px; display: grid; gap: 10px; align-content: start; overflow-y: auto; max-height: 560px; font-size: 13px; }
+.msg-me { background: var(--accent); color: var(--on-accent); border-radius: 14px 14px 4px 14px; padding: 10px 12px; justify-self: end; max-width: 92%; }
+.msg-me pre { background: transparent; color: inherit; padding: 0; margin: 6px 0 0; font-size: 11px; opacity: 0.85; }
+.msg-me .link-btn { color: inherit; opacity: 0.8; }
+.act { display: flex; gap: 8px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.act .mark { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; background: var(--line); flex: none; margin-top: 1px; }
+.act.done .mark { background: var(--good); color: #fff; }
+.act.now .mark { border: 2px solid var(--line); border-top-color: var(--ink); background: none; animation: spin 0.8s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .act.now .mark { animation: none; } }
+.act small { display: block; color: var(--muted); }
+.reply { padding: 2px 2px; }
+.reply p { margin: 0 0 8px; }
+.ask-input { border-top: 1px solid var(--line); padding: 10px 12px; }
+.ask-input input { width: 100%; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Create a new site: restaurant</h1>
+  <div class="actions">
+    <button class="btn small" id="fill-demo" type="button">Fill with demo content</button>
+    <button class="btn small" id="clear-all" type="button">Start empty</button>
+    <button class="btn small" id="restart" type="button">Start over</button>
+  </div>
+  <p>A working prototype of Twinstack's whole journey for a new restaurant site: from the dashboard, through the setup questions with a live preview, to the editor where Claude builds the site. Demo answers are marked.</p>
+</header>
+<nav class="journey" id="journey" aria-label="Where you are"></nav>
+
+<section class="dash" id="dashboard">
+  <div class="card">
+    <div class="appbar"><span class="brand">Twinstack</span><span>Your sites</span><span class="credits">10,000 Claude credits</span></div>
+    <div class="dash-body" id="dash-body"></div>
+  </div>
+</section>
+
+<section class="editor" id="editor" hidden>
+  <div class="card">
+    <div class="appbar"><span class="brand">Twinstack</span><span id="editor-name"></span><span class="credits" id="editor-credits">10,000 Claude credits</span></div>
+    <div class="editor-grid">
+      <nav class="side" aria-label="Editor screens"><span class="on">Home</span><span>Pages</span><span>Design</span><span>Site details</span><span>Images</span><span>Publish</span></nav>
+      <div class="stage" id="stage"></div>
+      <aside class="ask" aria-label="Ask Claude">
+        <div class="ask-head">Ask Claude<small id="ask-status"></small></div>
+        <div class="ask-log" id="ask-log" aria-live="polite"></div>
+        <div class="ask-input"><input type="text" id="f-ask" placeholder="Ask Claude to change something…" aria-label="Message Claude" disabled></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<div class="modal-bg" id="modal" hidden><div class="card modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" id="modal-card"></div></div>
+
+<main class="layout" id="setup" hidden>
+  <section class="card wizard" id="wizard" aria-live="polite"></section>
+  <aside class="preview-col">
+    <div class="card" style="padding:14px 16px;margin-bottom:12px" aria-live="polite"><h3 style="font-size:15px;margin-bottom:6px">What the AI understands</h3><div id="ai-read"></div></div>
+    <div class="card" aria-label="Homepage preview">
+      <div class="preview-head">
+        <span class="dotrow" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="url" id="preview-url">yourname.github.io/ember-and-olive</span>
+      </div>
+      <div id="preview"></div>
+    </div>
+    <p class="preview-note">A sketch of the homepage Claude is asked to build from these answers. The real one is designed by Claude; this shows what information reaches it and where it goes.</p>
+  </aside>
+</main>
+
+<script>
+/* ------------------------------------------------------------------ data */
+
+// Demo answers: a made-up restaurant. Dishes are marked as samples, the way the restaurant skill's
+// demo content is written for owners to replace.
+const DEMO_PHOTOS = [
+  { id: "d1", label: "Wood-fired flatbread", hue: 24 },
+  { id: "d2", label: "Grilled sea bass", hue: 196 },
+  { id: "d3", label: "Candle-lit dining room", hue: 38 },
+  { id: "d4", label: "Slow-cooked lamb", hue: 8 },
+];
+function demoState() {
+  return {
+    name: "Ember & Olive",
+    what: "A wood-fired Mediterranean kitchen in Gulshan serving flatbreads, grilled seafood and slow-cooked lamb for dinner and weekend brunch.",
+    brief: "For couples, families and office groups in Gulshan and Banani. A warm, candle-lit look with big food photos. Guests book a table by phone or WhatsApp, see the full menu with prices and find us on the map. Pages for the menu, our story, bookings and contact.",
+    cuisine: "Mediterranean",
+    dietary: ["Vegetarian options", "Halal"],
+    menuStyle: "Full menu with prices",
+    dishes: [
+      { name: "Za'atar flatbread", desc: "Stone-baked, olive oil, labneh", price: "৳450", sample: true },
+      { name: "Grilled sea bass", desc: "Lemon, capers, charred greens", price: "৳1,350", sample: true },
+      { name: "Lamb shoulder", desc: "Eight hours in the wood oven", price: "৳1,650", sample: true },
+      { name: "Burnt honey cheesecake", desc: "Pistachio, orange blossom", price: "৳520", sample: true },
+    ],
+    address: "House 12, Road 41, Gulshan 2, Dhaka 1212",
+    landmark: "Opposite Gulshan Lake Park",
+    phone: "+880 1700-000000",
+    email: "hello@emberandolive.example",
+    parking: "Valet parking from 6 pm",
+    hours: [
+      { day: "Mon", open: "12:00", close: "23:00", closed: true },
+      { day: "Tue", open: "12:00", close: "23:00", closed: false },
+      { day: "Wed", open: "12:00", close: "23:00", closed: false },
+      { day: "Thu", open: "12:00", close: "23:30", closed: false },
+      { day: "Fri", open: "10:00", close: "23:30", closed: false },
+      { day: "Sat", open: "10:00", close: "23:30", closed: false },
+      { day: "Sun", open: "12:00", close: "23:00", closed: false },
+    ],
+    action: "Book a table",
+    booking: "By phone",
+    bookingUrl: "https://book.example/ember-and-olive",
+    delivery: { Foodpanda: { on: true, url: "https://foodpanda.example/ember-and-olive" }, "Pathao Food": { on: false, url: "" }, "Our own delivery": { on: false, url: "" } },
+    events: true,
+    groupSize: "Up to 40 guests",
+    feel: "Cosy and rustic",
+    logo: null,
+    photos: DEMO_PHOTOS.map((p) => ({ ...p, demo: true })),
+    story: "We opened in 2019 around one wood-fired oven and a long table. Everything we serve is cooked over olive wood, from the morning's bread to the evening's lamb.",
+    chef: "Head chef: Nadia Rahman",
+    founded: "2019",
+    instagram: "https://instagram.com/emberandolive.example",
+    facebook: "",
+    maps: "https://maps.example/ember-and-olive",
+    reviews: "",
+    demo: true,
+  };
+}
+function emptyState() {
+  const s = demoState();
+  return {
+    ...s,
+    name: "", what: "", brief: "", cuisine: "", dietary: [], menuStyle: "", dishes: [{ name: "", desc: "", price: "", sample: false }],
+    address: "", landmark: "", phone: "", email: "", parking: "",
+    hours: s.hours.map((h) => ({ ...h, closed: false })),
+    action: "", booking: "", bookingUrl: "", delivery: { Foodpanda: { on: false, url: "" }, "Pathao Food": { on: false, url: "" }, "Our own delivery": { on: false, url: "" } },
+    events: false, groupSize: "", feel: "", logo: null, photos: [], story: "", chef: "", founded: "", instagram: "", facebook: "", maps: "", reviews: "", demo: false,
+  };
+}
+
+// From server/src/site-types/restaurant.json (keywords) and the 10-word brief rule.
+const KEYWORDS = ["restaurant", "cafe", "café", "coffee", "bakery", "bar", "pub", "bistro", "food", "menu", "dining", "dine", "takeaway", "delivery", "catering", "kitchen", "chef", "pizza", "grill", "brunch", "grilled", "flatbreads", "seafood", "table"];
+const MIN_BRIEF_WORDS = 10;
+const CUISINES = ["Local cuisine", "Mediterranean", "Italian or pizza", "Café and brunch", "Fine dining", "Street food"];
+const DIETARY = ["Vegetarian options", "Vegan options", "Halal", "Gluten-free options", "Kids' menu"];
+const MENU_STYLES = ["Full menu with prices", "Highlights only", "I'll add it later"];
+const ACTIONS = ["Book a table", "Order for delivery", "See the menu", "Visit us"];
+const BOOKINGS = ["By phone", "Booking link", "A form on the site", "Walk-ins only"];
+const FEELS = { "Cosy and rustic": "", "Modern and stylish": "modern", "Lively and casual": "lively", "Elegant": "elegant" };
+
+const PAGES = [
+  ["Home", "/", "Hero photo, signature dishes, the story in a few lines, hours and location, a booking button"],
+  ["Menu", "/menu.html", "The menu by section with descriptions, prices and dietary labels"],
+  ["About us", "/about.html", "The story, the chef and what makes the food special"],
+  ["Book a table", "/book.html", "How to reserve, group bookings and private events"],
+  ["Contact", "/contact.html", "Address with directions, phone, opening hours, ordering links"],
+  ["Privacy policy", "/privacy.html", "How booking and contact details are used"],
+];
+
+let state = demoState();
+let step = 0;
+let reviewTab = "config";
+let creating = null; // null, or the index of the stage being shown
+// Where the owner is: "dashboard" (with the Create window when `modal`), "setup" (the questions
+// beside the live preview), "creating", then "editor" (Claude building the site).
+let view = "dashboard";
+let modal = false;
+let source = "template";
+let githubName = null; // the More options override, else from the name
+let pickedRepo = "";
+let created = null; // { kind: "template" | "existing", name, repo }
+let timeline = []; // the editor's Ask Claude events
+let timers = [];
+
+const DEMO_REPOS = [
+  { name: "yourname/old-restaurant-site", private: false },
+  { name: "yourname/menu-pdf", private: true },
+  { name: "yourname/portfolio", private: false },
+];
+
+/* --------------------------------------------------------------- helpers */
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const words = (t) => t.trim().split(/\s+/).filter(Boolean).length;
+const slug = (t) => t.toLowerCase().normalize("NFKD").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "my-restaurant";
+
+function setPath(path, value) {
+  const keys = path.split(".");
+  let target = state;
+  for (const k of keys.slice(0, -1)) target = target[k];
+  target[keys.at(-1)] = value;
+}
+
+function detected() {
+  const text = `${state.name} ${state.what} ${state.brief}`.toLowerCase();
+  const found = new Set(text.match(/[\p{L}']+/gu) ?? []);
+  return KEYWORDS.filter((k) => found.has(k));
+}
+
+function hoursText() {
+  const fmt = (h) => `${h.open}–${h.close}`;
+  const groups = [];
+  for (const h of state.hours) {
+    const key = h.closed ? "closed" : fmt(h);
+    const last = groups.at(-1);
+    if (last && last.key === key) last.days.push(h.day);
+    else groups.push({ key, days: [h.day] });
+  }
+  return groups.map((g) => `${g.days.length > 1 ? `${g.days[0]}–${g.days.at(-1)}` : g.days[0]} ${g.key === "closed" ? "closed" : g.key}`).join(", ");
+}
+
+function photoArt(p) {
+  // Demo photos: a warm gradient "plate" drawn in SVG, labelled; uploads are shown as they are.
+  if (!p.demo) return `<img src="${p.url}" alt="${esc(p.label)}">`;
+  const h = p.hue;
+  return `<svg class="art" viewBox="0 0 120 90" role="img" aria-label="Demo photo: ${esc(p.label)}" preserveAspectRatio="xMidYMid slice">
+    <defs><radialGradient id="g${p.id}" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="hsl(${h} 70% 62%)"/><stop offset="1" stop-color="hsl(${h + 20} 45% 22%)"/></radialGradient></defs>
+    <rect width="120" height="90" fill="url(#g${p.id})"/>
+    <ellipse cx="60" cy="48" rx="34" ry="22" fill="hsl(${h} 30% 92% / 0.9)"/>
+    <ellipse cx="60" cy="46" rx="22" ry="13" fill="hsl(${h} 65% 45%)"/>
+    <circle cx="52" cy="43" r="4" fill="hsl(${h + 60} 50% 40%)"/><circle cx="66" cy="49" r="3" fill="hsl(${h + 90} 45% 35%)"/>
+  </svg>`;
+}
+
+/* ----------------------------------------------------------------- steps */
+
+const STEP_DEFS = [
+  {
+    id: "basics",
+    get title() { return `What does ${esc(state.name.trim() || "your restaurant")} serve?`; },
+    lead: "One or two sentences, the way you'd tell a guest. It goes under your name on the homepage and in search results.",
+    valid: () => state.what.trim(),
+    body: () => `
+      <div class="field"><label for="f-what">What you serve</label>
+        <textarea id="f-what" data-bind="what" maxlength="600" placeholder="A wood-fired Mediterranean kitchen serving…">${esc(state.what)}</textarea></div>`,
+  },
+  {
+    id: "brief",
+    title: "Tell us about your website",
+    lead: "Who it's for, the pages you want and the feel you're after. The AI builds your site from this.",
+    valid: () => words(state.brief) >= MIN_BRIEF_WORDS,
+    body: () => `
+      <div class="field"><label for="f-brief">Your brief</label>
+        <textarea id="f-brief" data-bind="brief" rows="5" maxlength="1500" placeholder="For couples and families nearby. A warm look with big food photos…">${esc(state.brief)}</textarea>
+        <span class="hint" id="brief-count"></span></div>
+      <div class="detect" id="detect"></div>`,
+    after: updateBriefStatus,
+  },
+  {
+    id: "menu",
+    title: "Your menu and signature dishes",
+    lead: "Your cuisine, dietary options and a few signature dishes. Prices only if you want them shown.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><span class="label">Cuisine</span>${chips("cuisine", CUISINES)}
+        <input type="text" data-bind="cuisine" value="${esc(CUISINES.includes(state.cuisine) ? "" : state.cuisine)}" placeholder="Or type your own" style="margin-top:8px" aria-label="Cuisine in your own words"></div>
+      <div class="field"><span class="label">Dietary options (pick any)</span>${chips("dietary", DIETARY, true)}</div>
+      <div class="field"><span class="label">Signature dishes</span>
+        <div class="dishes">${state.dishes.map(dishRow).join("")}</div>
+        <button type="button" class="link-btn" data-action="add-dish" style="margin-top:8px">Add a dish</button>
+        <span class="hint">Up to 6 for the homepage. Claude writes the full Menu page from these and asks for the rest.</span></div>
+      <div class="field"><span class="label">How should the menu appear?</span>${chips("menuStyle", MENU_STYLES)}</div>`,
+  },
+  {
+    id: "visit",
+    title: "Where and when can guests find you?",
+    lead: "These go in your site details, the footer and the Contact page.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><label for="f-address">Address</label><input type="text" id="f-address" data-bind="address" value="${esc(state.address)}"></div>
+      <div class="row2">
+        <div class="field"><label for="f-landmark">Landmark (optional)</label><input type="text" id="f-landmark" data-bind="landmark" value="${esc(state.landmark)}"></div>
+        <div class="field"><label for="f-parking">Parking (optional)</label><input type="text" id="f-parking" data-bind="parking" value="${esc(state.parking)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-phone">Phone for bookings</label><input type="tel" id="f-phone" data-bind="phone" value="${esc(state.phone)}"></div>
+        <div class="field"><label for="f-email">Email</label><input type="email" id="f-email" data-bind="email" value="${esc(state.email)}"></div>
+      </div>
+      <div class="field"><span class="label">Opening hours</span>
+        <div class="hours">${state.hours.map((h, i) => `
+          <div class="hour ${h.closed ? "closed" : ""}">
+            <b>${h.day}</b>
+            <input type="time" id="f-open-${i}" data-bind="hours.${i}.open" value="${h.open}" aria-label="${h.day} opens" ${h.closed ? "disabled" : ""}>
+            <input type="time" id="f-close-${i}" data-bind="hours.${i}.close" value="${h.close}" aria-label="${h.day} closes" ${h.closed ? "disabled" : ""}>
+            <label for="f-closed-${i}"><input type="checkbox" id="f-closed-${i}" data-bind="hours.${i}.closed" data-rerender ${h.closed ? "checked" : ""}> Closed</label>
+          </div>`).join("")}</div>
+        <span class="hint" id="hours-text">Shown as: ${esc(hoursText())}</span></div>`,
+  },
+  {
+    id: "analysis",
+    title: "Preparing your questions",
+    lead: "The AI reads what you've told it, checks our restaurant skill and looks at similar websites, then asks only what it still needs. At most 5 questions.",
+    valid: () => analysis.done,
+    body: analysisBody,
+    after: runAnalysisIfNeeded,
+  },
+  {
+    id: "bookings",
+    title: "How do guests book a table?",
+    lead: "This sets the button in your header and on the homepage.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><span class="label">What should visitors do first? ${fromBrief("action")}</span>${chips("action", ACTIONS)}</div>
+      <div class="field"><span class="label">How do they book? ${fromBrief("booking")}</span>${chips("booking", BOOKINGS)}
+        ${state.booking === "Booking link" ? `<input type="url" id="f-booking-url" data-bind="bookingUrl" value="${esc(state.bookingUrl)}" placeholder="https://…" style="margin-top:8px" aria-label="Booking link">` : ""}</div>`,
+  },
+  {
+    id: "delivery",
+    title: "Do you deliver or do takeaway?",
+    lead: "Delivery-app links sit next to your booking button, so guests can order in one tap.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><span class="label">Where can guests order? ${fromBrief("delivery")}</span>
+        <div class="checks">${Object.entries(state.delivery).map(([name, d], i) => `
+          <div class="check">
+            <input type="checkbox" id="f-del-${i}" data-bind="delivery.${name}.on" data-rerender ${d.on ? "checked" : ""}>
+            <label for="f-del-${i}">${esc(name)}</label>
+            ${d.on && name !== "Our own delivery" ? `<input type="url" id="f-del-url-${i}" data-bind="delivery.${name}.url" value="${esc(d.url)}" placeholder="Link to your ${esc(name)} page" aria-label="${esc(name)} link">` : ""}
+          </div>`).join("")}</div></div>`,
+  },
+  {
+    id: "events",
+    title: "Do you host groups or private events?",
+    lead: "Your brief mentions groups. Restaurants that take them show it on the Book a table page.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><span class="label">Private events or catering? ${fromBrief("events")}</span>${chips("events", ["Yes", "No"], false, (v) => (v === "Yes") === state.events)}</div>
+      <div class="field"><label for="f-group">Largest group you can seat</label><input type="text" id="f-group" data-bind="groupSize" value="${esc(state.groupSize)}" placeholder="Up to 40 guests"></div>`,
+  },
+  {
+    id: "look",
+    title: "What should it look and feel like?",
+    lead: "The atmosphere sets the colours and type; your logo and photos make it yours.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><span class="label">Atmosphere</span>${chips("feel", Object.keys(FEELS))}</div>
+      <div class="field"><span class="label">Logo (optional)</span>
+        <label class="drop" for="f-logo"><span>${state.logo ? esc(state.logo.name) : "Choose your logo"}</span><small>${state.logo ? "Click to choose another" : "PNG, SVG or WebP, up to 2 MB. Without one, the header shows your name."}</small></label>
+        <input type="file" id="f-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden>
+        ${state.logo ? `<button type="button" class="link-btn" data-action="remove-logo" style="margin-top:6px">Remove the logo</button>` : ""}</div>
+      <div class="field"><span class="label">Photos (up to 6)</span>
+        <label class="drop" for="f-photos"><span>Choose photos</span><small>Your food, your room, your team. 5 MB each.</small></label>
+        <input type="file" id="f-photos" accept="image/png,image/jpeg,image/webp" multiple hidden>
+        <div class="thumbs">${state.photos.map((p, i) => `<div class="thumb">${photoArt(p)}${p.demo ? `<span class="badge">Demo</span>` : ""}<button type="button" data-action="remove-photo" data-index="${i}" aria-label="Remove ${esc(p.label)}">×</button></div>`).join("")}</div></div>`,
+  },
+  {
+    id: "story",
+    title: "Your story and where else to find you",
+    lead: "Real words from you make the About page. Reviews only if they're real: we never invent them.",
+    valid: () => true,
+    body: () => `
+      <div class="field"><label for="f-story">Your story in a few sentences</label><textarea id="f-story" data-bind="story" maxlength="800">${esc(state.story)}</textarea></div>
+      <div class="row2">
+        <div class="field"><label for="f-chef">Chef or owner (optional)</label><input type="text" id="f-chef" data-bind="chef" value="${esc(state.chef)}"></div>
+        <div class="field"><label for="f-founded">Year opened (optional)</label><input type="text" id="f-founded" data-bind="founded" value="${esc(state.founded)}" inputmode="numeric"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-ig">Instagram</label><input type="url" id="f-ig" data-bind="instagram" value="${esc(state.instagram)}" placeholder="https://instagram.com/…"></div>
+        <div class="field"><label for="f-fb">Facebook</label><input type="url" id="f-fb" data-bind="facebook" value="${esc(state.facebook)}" placeholder="https://facebook.com/…"></div>
+      </div>
+      <div class="field"><label for="f-maps">Google Maps link</label><input type="url" id="f-maps" data-bind="maps" value="${esc(state.maps)}" placeholder="https://maps.google.com/…"></div>
+      <div class="field"><label for="f-reviews">Real guest reviews (optional)</label><textarea id="f-reviews" data-bind="reviews" placeholder="Paste up to 3, each with the guest's name.">${esc(state.reviews)}</textarea>
+        <span class="hint">Leave empty and the site shows none until you add some.</span></div>`,
+  },
+  { id: "review", title: "Check your answers", lead: "Everything below is saved into your new site, then Claude builds it.", valid: () => true, body: reviewBody },
+];
+
+/* ------------------------------------------------------- the AI's analysis */
+
+// In the real app these come from Claude: the owner's answers, our site type skills
+// (server/src/site-types/*.json) and a web search for similar businesses. Here they're worked out
+// in the page, and the outside research is a fixed example: a published page can't reach the web.
+
+const BY_ID = Object.fromEntries(STEP_DEFS.map((s) => [s.id, s]));
+const MAX_QUESTIONS = 5;
+let STEPS = [];
+let skipped = new Set();
+// What the AI has read so far: after the name, what you serve and the brief.
+let aiRead = null; // null | "name" | "what" | "brief"
+let analysis = { done: false, running: false, phase: 0, signature: "", plan: [], findings: [], read: null };
+
+// The candidate questions, most important first, and when each is needed.
+const CANDIDATES = [
+  { id: "menu", label: "What you serve", from: "Restaurant skill", why: "The Menu page and the homepage's signature dishes need them." },
+  { id: "visit", label: "Location and hours", from: "Restaurant skill", why: "Only you know your address, phone and opening hours." },
+  { id: "bookings", label: "Bookings", from: "Restaurant skill", why: "It sets the button in your header.", answered: (r) => r.action && r.booking },
+  { id: "look", label: "Look and feel", from: "Restaurant skill", why: "Your logo and photos make the site yours." },
+  { id: "story", label: "Your story and links", from: "Restaurant skill", why: "Real words for the About page; reviews only if real." },
+  { id: "delivery", label: "Delivery and takeaway", from: "Similar websites", why: "Delivery-app links get orders in one tap.", needed: (r) => r.delivery.length > 0 || r.mentionsOrders },
+  { id: "events", label: "Groups and private events", from: "Your brief", why: "You mention groups: places that seat them say how many.", needed: (r) => r.groups },
+];
+
+const SKILLS = [
+  { id: "restaurant", label: "Restaurant", words: KEYWORDS },
+  { id: "medical", label: "Medical", words: ["clinic", "doctor", "doctors", "dental", "dentist", "patients", "health", "hospital", "pharmacy"] },
+  { id: "law", label: "Law firm", words: ["law", "lawyer", "lawyers", "legal", "attorney", "solicitor", "court", "advocate"] },
+];
+const AREAS = ["Gulshan", "Banani", "Dhanmondi", "Uttara", "Mirpur", "Bashundhara"];
+
+function textFor(upTo) {
+  const parts = [state.name];
+  if (upTo !== "name") parts.push(state.what);
+  if (upTo === "brief") parts.push(state.brief);
+  return parts.join(" ");
+}
+
+/** What the text tells the AI: the likely skill, the evidence, and facts it can fill in. */
+function readText(upTo) {
+  const text = textFor(upTo);
+  const lower = text.toLowerCase();
+  const found = new Set(lower.match(/[\p{L}']+/gu) ?? []);
+  const scores = SKILLS.map((s) => ({ ...s, hits: s.words.filter((w) => found.has(w)) })).sort((a, b) => b.hits.length - a.hits.length);
+  const best = scores[0].hits.length ? scores[0] : null;
+  const has = (re) => re.test(lower);
+  return {
+    skill: best,
+    scores,
+    confidence: !best ? "not sure yet" : best.hits.length >= 3 ? "sure" : "likely",
+    cuisine: has(/mediterranean/) ? "Mediterranean" : has(/pizza|pasta|italian/) ? "Italian or pizza" : has(/caf[eé]|coffee/) ? "Café and brunch" : has(/fine dining|tasting menu/) ? "Fine dining" : has(/street food|kebab|fuchka/) ? "Street food" : "",
+    action: has(/\bbook|reserv/) ? "Book a table" : has(/\border|deliver/) ? "Order for delivery" : "",
+    booking: has(/whatsapp|by phone|call us|phone/) ? "By phone" : has(/booking link|book online|opentable/) ? "Booking link" : has(/\bform\b/) ? "A form on the site" : "",
+    feel: has(/warm|cosy|cozy|candle|rustic/) ? "Cosy and rustic" : has(/modern|minimal|sleek/) ? "Modern and stylish" : has(/lively|fun|casual/) ? "Lively and casual" : has(/elegant|luxury|upscale/) ? "Elegant" : "",
+    delivery: ["Foodpanda", "Pathao Food"].filter((d) => lower.includes(d.toLowerCase())),
+    mentionsOrders: has(/deliver|takeaway|take-away|order online/),
+    groups: has(/\bgroups?\b|private|events?\b|parties|party|catering|wedding/),
+    area: AREAS.find((a) => lower.includes(a.toLowerCase())) ?? "",
+  };
+}
+
+/** Shows next to a field the AI filled in from what the owner wrote. */
+function fromBrief(key) {
+  const r = analysis.read;
+  if (!r) return "";
+  const hit = key === "delivery" ? r.delivery.length > 0 : key === "events" ? r.groups : Boolean(r[key]);
+  return hit ? `<span class="badge" style="background:var(--soft);color:var(--good)">From your brief</span>` : "";
+}
+
+/** Fills in what the text already says, only where the owner hasn't answered. */
+function applyPrefill(r) {
+  if (!state.cuisine && r.cuisine) state.cuisine = r.cuisine;
+  if (!state.action && r.action) state.action = r.action;
+  if (!state.booking && r.booking) state.booking = r.booking;
+  if (!state.feel && r.feel) state.feel = r.feel;
+  for (const d of r.delivery) if (state.delivery[d]) state.delivery[d].on = true;
+  if (r.groups && !state.groupSize) state.events = true;
+}
+
+function findingsFor(r) {
+  const where = r.area ? `in ${r.area}` : "near you";
+  return [
+    { text: `Restaurant sites ${where} put opening hours and a map on the homepage.`, changes: "Location and hours: asked early" },
+    { text: "Most show the full menu with prices in taka: guests compare before they book.", changes: "What you serve: asks for prices" },
+    { text: "Friday and Saturday hours often differ from weekdays.", changes: "Location and hours: asks day by day" },
+    { text: "Delivery-app links (Foodpanda, Pathao Food) sit next to the booking button.", changes: r.delivery.length || r.mentionsOrders ? "Delivery: asked" : "Delivery: only if you mention it" },
+    { text: "Places that seat groups say how many guests they can take.", changes: r.groups ? "Groups and events: asked" : "Groups: not needed" },
+  ];
+}
+
+function makePlan(r) {
+  if (r.skill && r.skill.id !== "restaurant") {
+    return [{ id: "-", label: `This looks like a ${r.skill.label.toLowerCase()} website`, status: "other", why: `The real app would use our ${r.skill.label.toLowerCase()} skill's questions. This prototype only has the restaurant's.` }];
+  }
+  let asked = 0;
+  return CANDIDATES.map((c) => {
+    if (c.needed && !c.needed(r)) return { ...c, status: "not-needed" };
+    if (c.answered?.(r)) return { ...c, status: "answered" };
+    if (asked >= MAX_QUESTIONS) return { ...c, status: "later" };
+    asked++;
+    return { ...c, status: "ask" };
+  });
+}
+
+function signature() {
+  return `${state.name}|${state.what}|${state.brief}`;
+}
+
+const PHASES = ["Reading your answers", "Checking our skills", "Looking at similar websites", "Choosing your questions"];
+
+function runAnalysisIfNeeded() {
+  if (analysis.running || (analysis.done && analysis.signature === signature())) return;
+  analysis = { done: false, running: true, phase: 0, signature: signature(), plan: [], findings: [], read: null };
+  renderWizard();
+  const tick = () => {
+    analysis.phase++;
+    if (analysis.phase < PHASES.length) {
+      renderWizard();
+      return later(tick, 800);
+    }
+    const r = readText("brief");
+    applyPrefill(r);
+    analysis = { ...analysis, done: true, running: false, read: r, findings: findingsFor(r), plan: makePlan(r) };
+    rebuildSteps();
+    render();
+  };
+  later(tick, 800);
+}
+
+function rebuildSteps() {
+  const asked = analysis.done ? analysis.plan.filter((p) => p.status === "ask").map((p) => p.id) : [];
+  STEPS = [BY_ID.basics, BY_ID.brief, BY_ID.analysis, ...asked.map((id) => BY_ID[id]), BY_ID.review];
+}
+
+const STATUS = {
+  ask: ["Will ask", "var(--accent)", "var(--on-accent)"],
+  answered: ["Your brief answered it", "var(--soft)", "var(--good)"],
+  "not-needed": ["Not needed", "var(--soft)", "var(--muted)"],
+  later: ["Ask later, in the editor", "var(--demo-soft)", "var(--demo)"],
+  other: ["Other skill", "var(--demo-soft)", "var(--demo)"],
+};
+
+function analysisBody() {
+  if (!analysis.done) {
+    return `<ol class="progress" style="margin-top:4px">${PHASES.map((p, i) => `<li class="${i < analysis.phase ? "done" : i === analysis.phase ? "now" : ""}"><span class="mark">${i < analysis.phase ? "✓" : ""}</span>${p}</li>`).join("")}</ol>`;
+  }
+  const r = analysis.read;
+  const asking = analysis.plan.filter((p) => p.status === "ask").length;
+  return `
+    <div class="sum"><header><h3>Kind of website</h3></header>
+      <p style="margin:0;font-size:14px">${r.skill ? `<b>${esc(r.skill.label)}</b> (${r.confidence}), from: ${r.skill.hits.slice(0, 6).map(esc).join(", ")}` : "Not sure: the general questions are used."}</p>
+      <p class="hint" style="margin:4px 0 0;font-size:12px;color:var(--muted)">Skills checked: ${r.scores.map((s) => `${esc(s.label)} ${s.hits.length}`).join(" · ")}</p></div>
+    <div class="sum"><header><h3>Similar websites</h3><span class="badge">Simulated</span></header>
+      <ul style="margin:0;padding-left:18px;font-size:13px;display:grid;gap:4px">${analysis.findings.map((f) => `<li>${esc(f.text)} <span style="color:var(--muted)">→ ${esc(f.changes)}</span></li>`).join("")}</ul></div>
+    <div class="sum"><header><h3>Your questions: ${asking}</h3></header>
+      <div style="display:grid;gap:8px">${analysis.plan
+        .map((p) => {
+          const [label, bg, fg] = STATUS[p.status];
+          return `<div style="display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:start;font-size:13px">
+            <b>${esc(p.label)}</b><span class="badge" style="background:${bg};color:${fg}">${label}</span>
+            <span style="color:var(--muted);grid-column:1 / -1">${esc(p.why)}${p.from ? ` <i>(${esc(p.from)})</i>` : ""}</span></div>`;
+        })
+        .join("")}</div></div>`;
+}
+
+/** The "What the AI understands" card above the preview. */
+function renderAiRead() {
+  const box = $("#ai-read");
+  if (!box) return;
+  if (!aiRead) {
+    box.innerHTML = `<p class="hint" style="margin:0;color:var(--muted);font-size:13px">The AI reads each answer as you go and tells you what it understands.</p>`;
+    return;
+  }
+  const r = aiRead === "brief" && analysis.read ? analysis.read : readText(aiRead);
+  const after = { name: "your name", what: "what you serve", brief: "your brief" }[aiRead];
+  const facts = [
+    r.cuisine && ["Cuisine", r.cuisine],
+    r.action && ["First action", r.action],
+    r.booking && ["Booking", r.booking],
+    r.feel && ["Feel", r.feel],
+    r.area && ["Area", r.area],
+    r.groups && ["Groups", "Yes"],
+    r.delivery.length && ["Delivery", r.delivery.join(", ")],
+  ].filter(Boolean);
+  box.innerHTML = `
+    <p style="margin:0;font-size:12px;color:var(--muted)">After ${after}</p>
+    <p style="margin:2px 0 0;font-size:14px"><b>${r.skill ? `${esc(r.skill.label)} website` : "Not sure yet"}</b>${r.skill ? ` · ${r.confidence}` : ""}</p>
+    ${r.skill ? `<p style="margin:2px 0 0;font-size:12px;color:var(--muted)">From: ${r.skill.hits.slice(0, 6).map(esc).join(", ")}</p>` : `<p style="margin:2px 0 0;font-size:12px;color:var(--muted)">${aiRead === "name" ? "The name could be a restaurant, a shop or a brand." : "Tell it more and it will pick the kind of website."}</p>`}
+    ${facts.length ? `<div class="chips" style="margin-top:8px">${facts.map(([k, v]) => `<span class="badge" style="background:var(--soft);color:var(--ink)">${esc(k)}: ${esc(v)}</span>`).join("")}</div>` : ""}`;
+}
+
+function goAfter(stage) {
+  aiRead = stage;
+  // A changed brief means new questions: until the analysis runs again, none are known.
+  if (stage === "brief" && analysis.signature !== signature()) {
+    analysis = { done: false, running: false, phase: 0, signature: "", plan: [], findings: [], read: null };
+    rebuildSteps();
+  }
+}
+
+/** The questions left for Claude to ask in the editor: skipped ones, and those over the limit of 5. */
+function laterAsks() {
+  return analysis.plan.filter((p) => skipped.has(p.id) || p.status === "later").map((p) => p.label.toLowerCase());
+}
+
+/** Leaving a step, by Continue or Skip: the AI reads what it said. */
+function leave(id) {
+  if (id === "basics") goAfter("what");
+  if (id === "brief") goAfter("brief");
+}
+
+rebuildSteps();
+
+function chips(key, options, multi = false, isOn) {
+  return `<div class="chips" role="group">${options
+    .map((o) => {
+      const on = isOn ? isOn(o) : multi ? state[key].includes(o) : state[key] === o;
+      return `<button type="button" class="chip" aria-pressed="${on}" data-chip="${key}" data-value="${esc(o)}" ${multi ? "data-multi" : ""}>${esc(o)}</button>`;
+    })
+    .join("")}</div>`;
+}
+
+function dishRow(d, i) {
+  return `<div class="dish">
+    <input type="text" id="f-dish-${i}" data-bind="dishes.${i}.name" value="${esc(d.name)}" placeholder="Dish" aria-label="Dish ${i + 1} name">
+    <input type="text" id="f-dish-desc-${i}" data-bind="dishes.${i}.desc" value="${esc(d.desc)}" placeholder="Short description" aria-label="Dish ${i + 1} description">
+    <input type="text" id="f-dish-price-${i}" data-bind="dishes.${i}.price" value="${esc(d.price)}" placeholder="Price" aria-label="Dish ${i + 1} price">
+    <div class="tools">${d.sample ? `<span class="badge" title="Demo content: replace with your own">Sample</span>` : ""}
+      <button type="button" class="icon-btn" data-action="remove-dish" data-index="${i}" aria-label="Remove dish ${i + 1}">×</button></div>
+  </div>`;
+}
+
+/* ---------------------------------------------------------- what's saved */
+
+function siteConfig() {
+  return {
+    name: state.name,
+    shortName: state.name,
+    description: state.what,
+    contact: { phone: state.phone, email: state.email, address: [state.address, state.landmark].filter(Boolean).join(" · "), hours: hoursText(), bookingUrl: state.booking === "Booking link" ? state.bookingUrl : "", bookingLabel: state.action || "Book a table" },
+    social: { instagram: state.instagram, facebook: state.facebook },
+    brand: { logoText: state.name, logo: state.logo ? `/assets/img/brand/${state.logo.name}` : "" },
+  };
+}
+
+function profile() {
+  const delivery = Object.entries(state.delivery).filter(([, d]) => d.on).map(([n]) => n);
+  const lines = [
+    "## Site profile",
+    "",
+    "<!-- Written by the setup questions. Change anything here and Claude follows it from then on. -->",
+    "- Site type: Restaurant, café or food business",
+    state.cuisine && `- Cuisine: ${state.cuisine}`,
+    state.dietary.length && `- Dietary options: ${state.dietary.join(", ")}`,
+    state.menuStyle && `- Menu: ${state.menuStyle}`,
+    state.dishes.some((d) => d.name) && `- Signature dishes: ${state.dishes.filter((d) => d.name).map((d) => `${d.name}${d.price ? ` (${d.price})` : ""}${d.sample ? " [sample]" : ""}`).join("; ")}`,
+    state.action && `- Main action: ${state.action}`,
+    state.booking && `- Booking: ${state.booking}`,
+    delivery.length && `- Delivery: ${delivery.join(", ")}`,
+    `- Private events or catering: ${state.events ? "yes" : "no"}${state.groupSize ? `, ${state.groupSize.toLowerCase()}` : ""}`,
+    state.parking && `- Parking: ${state.parking}`,
+    state.feel && `- Atmosphere: ${state.feel}`,
+    state.chef && `- ${state.chef}`,
+    state.founded && `- Opened: ${state.founded}`,
+    state.story && `- Our story: ${state.story}`,
+    state.reviews.trim() ? `- Real reviews to use: ${state.reviews.trim()}` : "- Reviews: none yet; never invent any",
+  ];
+  return lines.filter(Boolean).join("\n");
+}
+
+function buildRequest() {
+  const photos = state.photos.map((p, i) => `/assets/img/uploads/${p.demo ? `demo-${i + 1}` : slug(p.label)}.jpg`);
+  return [
+    `Set up my new site for ${state.name}.`,
+    `What we do: ${state.what}`,
+    `My brief for the website: ${state.brief}`,
+    "Create my homepage and design it from this brief, so a first-time visitor understands straight away what we do, why to choose us and what to do next.",
+    "Then design a header and footer that match it and suit the brief.",
+    photos.length && `Use these photos of ours on it: ${photos.join(", ")}.`,
+    "Then create the other pages the brief calls for, write each one in the homepage's look, and put them in the menu.",
+    "This is a restaurant, café or food business website. Follow this plan for it:",
+    "Pages:",
+    ...PAGES.map(([t, a, p]) => `- ${t} (${a}): ${p}.`),
+    "Rules:",
+    "- Let photos lead: large images, short text.",
+    "- Prices, allergens and dietary labels only as the owner gives them.",
+    "- Opening hours and the address easy to find on every page.",
+    "- Never invent reviews, ratings or awards.",
+    "Sample content: dishes marked [sample] in my site profile are examples; show them as samples for me to replace.",
+    laterAsks().length && `Ask me later, one at a time, about: ${laterAsks().join("; ")}.`,
+    analysis.findings.length && `From similar websites: ${analysis.findings.map((f) => f.text).join(" ")}`,
+    "I've already answered your setup questions, and my answers are in the site profile of my notes. Only ask me about something essential that's still missing.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function reviewBody() {
+  const v = (x) => (x && String(x).trim() ? esc(x) : `<span class="missing">Not given</span>`);
+  const delivery = Object.entries(state.delivery).filter(([, d]) => d.on).map(([n]) => n).join(", ");
+  const section = (title, goTo, rows) => {
+    const inSteps = STEPS.some((x) => x.id === goTo);
+    const status = skipped.has(goTo) ? ["Skipped: Claude asks later", "var(--demo-soft)", "var(--demo)"] : inSteps ? null : STATUS[analysis.plan.find((p) => p.id === goTo)?.status ?? "later"];
+    return `<div class="sum"><header><h3>${title}</h3>${status ? `<span class="badge" style="background:${status[1]};color:${status[2]}">${status[0]}</span>` : ""}${inSteps ? `<button type="button" class="link-btn" data-goto="${goTo}">Change</button>` : `<button type="button" class="link-btn" data-ask="${goTo}">${analysis.plan.find((p) => p.id === goTo)?.status === "answered" ? "Change" : "Answer it now"}</button>`}</header>
+    <dl>${rows.map(([k, val]) => `<dt>${k}</dt><dd>${val}</dd>`).join("")}</dl></div>`;
+  };
+  const tabs = { config: ["Site details", "site.config.json", JSON.stringify(siteConfig(), null, 2)], profile: ["Site profile", "knowledge/notes.md", profile()], build: ["Build request", "sent to Ask Claude", buildRequest()], pages: ["Pages", "the plan Claude follows", PAGES.map(([t, a, p]) => `${t.padEnd(15)} ${a.padEnd(15)} ${p}`).join("\n")] };
+  return `
+    <div class="summary">
+      ${section("The basics", "basics", [["Name", v(state.name)], ["What you serve", v(state.what)], ["Brief", `${words(state.brief)} words`]])}
+      ${section("Menu", "menu", [["Cuisine", v(state.cuisine)], ["Dietary", v(state.dietary.join(", "))], ["Dishes", v(state.dishes.filter((d) => d.name).map((d) => d.name).join(", "))], ["Menu", v(state.menuStyle)]])}
+      ${section("Location and hours", "visit", [["Address", v(state.address)], ["Phone", v(state.phone)], ["Email", v(state.email)], ["Hours", v(hoursText())]])}
+      ${section("Bookings", "bookings", [["First action", v(state.action)], ["Booking", v(state.booking)]])}
+      ${section("Delivery and takeaway", "delivery", [["Delivery", v(delivery)]])}
+      ${section("Groups and events", "events", [["Events", state.events ? `Yes${state.groupSize ? `, ${esc(state.groupSize)}` : ""}` : "No"]])}
+      ${section("Look and feel", "look", [["Atmosphere", v(state.feel)], ["Logo", state.logo ? esc(state.logo.name) : "Your name as text"], ["Photos", `${state.photos.length}${state.photos.some((p) => p.demo) ? " (demo)" : ""}`]])}
+      ${section("Story and links", "story", [["Story", v(state.story)], ["Instagram", v(state.instagram)], ["Reviews", state.reviews.trim() ? "Given" : "None yet"]])}
+    </div>
+    <div class="tabs" role="tablist">${Object.entries(tabs).map(([id, [label]]) => `<button type="button" role="tab" aria-selected="${reviewTab === id}" data-tab="${id}">${label}</button>`).join("")}</div>
+    <p class="lead" style="margin-top:10px">Saved to <b>${tabs[reviewTab][1]}</b></p>
+    <pre>${esc(tabs[reviewTab][2])}</pre>`;
+}
+
+/* --------------------------------------------------------------- rendering */
+
+const CREATE_STAGES = ["Copying the website template", "Saving it to your GitHub account", "Giving it a web address", "Opening your site"];
+const IMPORT_STAGES = ["Checking your repository", "Adding it to your sites", "Giving it a web address", "Opening your site"];
+// The Create window's first screen is step 1. The number of steps is known once the questions are.
+const totalSteps = () => STEPS.length + 1;
+const QUESTION_IDS = ["menu", "visit", "bookings", "delivery", "events", "look", "story"];
+
+function renderWizard() {
+  const w = $("#wizard");
+  if (creating !== null) {
+    const stages = created?.kind === "existing" ? IMPORT_STAGES : CREATE_STAGES;
+    w.innerHTML = `<div class="center">
+      <h2>${created?.kind === "existing" ? "Setting up" : "Creating"} ${esc(created?.name || state.name)}</h2>
+      <p class="lead">This usually takes under a minute. Please keep this page open.</p></div>
+      <ol class="progress">${stages.map((s, i) => `<li class="${i < creating ? "done" : i === creating ? "now" : ""}"><span class="mark">${i < creating ? "✓" : ""}</span>${s}</li>`).join("")}</ol>`;
+    return;
+  }
+  const s = STEPS[step];
+  const valid = Boolean(s.valid());
+  const last = step === STEPS.length - 1;
+  const questions = STEPS.filter((x) => QUESTION_IDS.includes(x.id));
+  const qIndex = questions.indexOf(s);
+  const known = analysis.done;
+  // Every step can be skipped: the name, what you serve and the brief leave less for the AI to go
+  // on; the analysis skips all the questions; a question is left for the editor.
+  const skipLabel = { basics: "Skip", brief: "Skip", analysis: "Skip the questions", review: "" }[s.id] ?? "Skip this question";
+  const showSkip = Boolean(skipLabel) && !(s.id === "analysis" && !analysis.done);
+  const nextLabel = last ? "Create my site" : s.id === "analysis" ? (questions.length ? `Answer ${questions.length} question${questions.length === 1 ? "" : "s"}` : "Continue") : "Continue";
+  w.innerHTML = `
+    <div class="dots" aria-hidden="true">${Array.from({ length: known ? totalSteps() : step + 3 }, (_, i) => `<span class="${i <= step + 1 ? "on" : ""}"></span>`).join("")}</div>
+    <p class="stepno">Step ${step + 2}${known ? ` of ${totalSteps()}` : ""}${qIndex >= 0 ? ` · Question ${qIndex + 1} of ${questions.length}` : ""}${skipped.has(s.id) ? ` <span class="badge">Skipped</span>` : ""}${state.demo ? ` <span class="badge">Demo answers</span>` : ""}</p>
+    <h2 id="step-title">${s.title}</h2>
+    <p class="lead">${s.lead}</p>
+    <form class="fields" id="step-form" novalidate>${s.body()}</form>
+    <div class="nav">
+      <button type="button" class="btn" data-action="back">Back</button>
+      ${showSkip ? `<button type="button" class="btn" data-action="skip" style="margin-left:auto">${skipLabel}</button>` : ""}
+      <button type="button" class="btn primary" id="next" data-action="next" ${valid ? "" : "disabled"} ${showSkip ? 'style="margin-left:0"' : ""}>${nextLabel}</button>
+    </div>`;
+  s.after?.();
+  renderAiRead();
+}
+
+function updateBriefStatus() {
+  const n = words(state.brief);
+  const count = $("#brief-count");
+  if (count) count.textContent = n >= MIN_BRIEF_WORDS ? `${n} words. Looks good: more detail gives the AI more to go on.` : `At least ${MIN_BRIEF_WORDS} words: ${MIN_BRIEF_WORDS - n} more to go.`;
+  const box = $("#detect");
+  if (box) {
+    const hits = detected();
+    box.innerHTML = hits.length
+      ? `<span class="ok">✓ Restaurant website</span><span>Picked from: ${hits.slice(0, 6).map(esc).join(", ")}</span><span style="color:var(--muted)">Next: 5 questions for restaurants.</span>`
+      : `<span>Keep writing: the AI picks the kind of website from what you tell it.</span>`;
+  }
+}
+
+function renderPreview() {
+  $("#preview").innerHTML = previewHTML();
+  $("#preview-url").textContent = `yourname.github.io/${slug(state.name)}`;
+}
+
+/** The homepage sketch for the current answers. */
+function previewHTML() {
+  const name = state.name.trim() || "Your restaurant";
+  const cta = state.action || "Book a table";
+  const dishes = state.dishes.filter((d) => d.name.trim()).slice(0, 6);
+  const hero = state.photos[0];
+  const open = state.hours.filter((h) => !h.closed);
+  const tags = [state.cuisine, ...state.dietary].filter(Boolean);
+  const delivery = Object.entries(state.delivery).filter(([, d]) => d.on).map(([n]) => n);
+  return `<div class="site ${FEELS[state.feel] ?? ""}">
+    <div class="s-header">
+      <span class="s-logo">${state.logo ? `<img src="${state.logo.url}" alt="">` : ""}${state.logo ? "" : esc(name)}</span>
+      <nav class="s-nav"><span>Menu</span><span>About</span><span>Book</span><span>Contact</span></nav>
+      <span class="s-btn">${esc(cta)}</span>
+    </div>
+    <div class="s-hero">
+      <div>
+        <h3>${esc(name)}</h3>
+        <p>${state.what.trim() ? esc(state.what) : `<span class="s-empty">What you serve goes here.</span>`}</p>
+        <div class="ctas"><span class="s-btn">${esc(cta)}</span><span class="s-ghost">See the menu</span>${delivery.length ? `<span class="s-ghost">Order on ${esc(delivery[0])}</span>` : ""}</div>
+      </div>
+      <div class="s-photo">${hero ? photoArt(hero) + (hero.demo ? `<span class="badge">Demo photo</span>` : "") : `<div class="art" style="display:grid;place-items:center;background:var(--p-card);color:var(--p-muted)">Your best photo</div>`}</div>
+    </div>
+    <div class="s-section">
+      <h4>Signature dishes ${dishes.some((d) => d.sample) ? `<span class="badge">Samples</span>` : ""}</h4>
+      ${dishes.length ? `<div class="s-dishes">${dishes.map((d) => `<div class="s-dish"><div class="top-line"><b>${esc(d.name)}</b>${d.price && state.menuStyle !== "Highlights only" ? `<span class="price">${esc(d.price)}</span>` : ""}</div><span>${esc(d.desc)}</span></div>`).join("")}</div>` : `<p class="s-empty">Your signature dishes go here.</p>`}
+      ${tags.length ? `<div class="s-tags">${tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+    </div>
+    ${state.story.trim() ? `<div class="s-section s-story"><h4>Our story</h4><p>${esc(state.story)}</p>${state.chef ? `<p><b>${esc(state.chef)}</b></p>` : ""}</div>` : ""}
+    <div class="s-section"><h4>Visit us</h4>
+      <div class="s-visit">
+        <div class="s-box"><table>${state.hours.map((h) => `<tr><td>${h.day}</td><td>${h.closed ? "Closed" : `${h.open}–${h.close}`}</td></tr>`).join("")}</table></div>
+        <div class="s-box">${state.address ? `<b>${esc(state.address)}</b>` : `<span class="s-empty">Your address</span>`}${state.landmark ? `<br>${esc(state.landmark)}` : ""}${state.parking ? `<br>${esc(state.parking)}` : ""}<br><br>${state.phone ? esc(state.phone) : `<span class="s-empty">Your phone</span>`}${state.events ? `<br><br>Private events and catering${state.groupSize ? `: ${esc(state.groupSize.toLowerCase())}` : ""}` : ""}</div>
+      </div>
+    </div>
+    <footer class="s-footer">
+      <div><b>${esc(name)}</b>${state.address ? esc(state.address) : ""}<br>${esc(state.phone)}${state.email ? ` · ${esc(state.email)}` : ""}</div>
+      <div><b>Open</b>${open.length ? esc(hoursText()) : "Hours to come"}</div>
+      <div><b>Follow</b>${[state.instagram && "Instagram", state.facebook && "Facebook", state.maps && "Google Maps"].filter(Boolean).join(" · ") || "Links to come"}<br>Privacy policy</div>
+    </footer>
+  </div>`;
+}
+
+function render() {
+  $("#dashboard").hidden = view !== "dashboard";
+  $("#setup").hidden = view !== "setup" && view !== "creating";
+  $("#editor").hidden = view !== "editor";
+  $("#modal").hidden = !(view === "dashboard" && modal);
+  renderJourney();
+  if (view === "dashboard") {
+    renderDashboard();
+    if (modal) renderModal();
+  }
+  if (view === "setup" || view === "creating") {
+    renderWizard();
+    renderPreview();
+  }
+  if (view === "editor") renderEditor();
+}
+
+const JOURNEY = ["Dashboard", "Name your site", "What you serve", "Your brief", "AI prepares questions", "Questions", "Check your answers", "Creating the site", "Claude builds it"];
+function journeyIndex() {
+  if (view === "dashboard") return modal ? 1 : 0;
+  if (view === "setup") return { basics: 2, brief: 3, analysis: 4, review: 6 }[STEPS[step].id] ?? 5;
+  if (view === "creating") return 7;
+  return 8;
+}
+function renderJourney() {
+  const at = journeyIndex();
+  $("#journey").innerHTML = JOURNEY.map((j, i) => `<span class="${i === at ? "on" : i < at ? "done" : ""}" ${i === at ? 'aria-current="step"' : ""}>${i + 1}. ${j}</span>`).join("");
+}
+
+function renderDashboard() {
+  $("#dash-body").innerHTML = `
+    <div class="dash-head"><h2>Your sites</h2><button type="button" class="btn primary" data-d="create">Create a new site</button></div>
+    ${
+      created
+        ? `<div class="sites"><div class="site-card">
+            <div class="thumb-site" aria-hidden="true">${created.kind === "template" ? previewHTML() : `<div class="starter"><b>${esc(created.name)}</b>Brought in from ${esc(created.repo)}</div>`}</div>
+            <div class="meta"><b>${esc(created.name)}</b><small>yourname.github.io/${esc(created.kind === "template" ? githubName ?? slug(state.name) : created.repo.split("/")[1])} · not published yet</small>
+              <button type="button" class="btn small" data-d="edit">Edit site</button></div></div></div>`
+        : `<div class="empty"><h3>You don't have a site yet</h3><p>Create one in a few minutes: answer a few questions about your business, and Claude builds the pages for you.</p>
+            <button type="button" class="btn primary" data-d="create" style="margin:8px 0 0">Create a new site</button></div>`
+    }`;
+}
+
+function renderModal() {
+  const fresh = source === "template";
+  const ghName = githubName ?? slug(state.name);
+  $("#modal-card").innerHTML = `
+    <div class="modal-top">
+      <div><h2 id="modal-title">Create a new site</h2>
+        <p>${fresh ? "Start from a ready-made design. You can change everything afterwards." : "Make a repository from your GitHub account into a site you manage here."}</p></div>
+      <button type="button" class="icon-btn" data-m="close" aria-label="Close">×</button>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="Start from">
+      <button type="button" role="radio" aria-checked="${fresh}" data-m="source" data-value="template">Start fresh</button>
+      <button type="button" role="radio" aria-checked="${!fresh}" data-m="source" data-value="existing">Use a repo I already have</button>
+    </div>
+    ${
+      fresh
+        ? ""
+        : `<div class="field"><span class="label">Which repository?</span>
+            <div class="repos" role="radiogroup" aria-label="Your repositories">${DEMO_REPOS.map((r) => `<button type="button" class="repo" role="radio" aria-checked="${pickedRepo === r.name}" data-m="repo" data-value="${esc(r.name)}"><span>${esc(r.name)}</span><small>${r.private ? "Private" : "Public"}</small></button>`).join("")}</div>
+            <span class="hint">Only repositories you're an admin of are listed.</span></div>
+          ${pickedRepo ? `<p class="note">This isn't a Twinstack site yet. The site tools are added to it in one change; none of its files are changed or removed, and its existing pages can be brought in later.</p>` : ""}`
+    }
+    <div class="field"><label for="m-name">What's your site called?${fresh ? "" : ` <span style="font-weight:400;color:var(--muted)">(optional)</span>`}</label>
+      <input type="text" id="m-name" data-m-bind="name" maxlength="100" value="${esc(state.name)}" placeholder="Bright Bakery">
+      ${fresh ? `<span class="hint" id="m-hint">Its web address will be <b>yourname.github.io/${esc(ghName)}</b>. You can use your own domain name later.</span>` : ""}</div>
+    ${
+      fresh
+        ? `<details class="more"><summary>More options</summary>
+            <div class="field"><label for="m-gh">Name on GitHub</label><input type="text" id="m-gh" class="mono" data-m-bind="github" value="${esc(ghName)}" pattern="[A-Za-z0-9._\\-]{1,100}">
+              <span class="hint">Also the last part of the web address.</span></div></details>
+          <p class="note">Next: a few questions about your business, with a preview of your site as you answer. Nothing is created until you've checked your answers.</p>`
+        : ""
+    }
+    <div class="nav" style="margin-top:0">
+      <button type="button" class="btn" data-m="close">Cancel</button>
+      ${fresh ? `<button type="button" class="btn" data-m="skip-name" style="margin-left:auto">Skip</button>` : ""}
+      ${
+        fresh
+          ? `<button type="button" class="btn primary" id="m-next" data-m="continue" style="margin-left:0" ${state.name.trim() ? "" : "disabled"}>Continue</button>`
+          : `<button type="button" class="btn primary" data-m="use-repo" ${pickedRepo ? "" : "disabled"}>Use this repository</button>`
+      }
+    </div>`;
+}
+
+/* ------------------------------------------------------------ the editor */
+
+let creditsLeft = 10000;
+let homeDone = false;
+let pagesMade = [];
+let showRequest = false;
+
+function renderEditor() {
+  const fresh = created.kind === "template";
+  $("#editor-name").textContent = created.name;
+  $("#editor-credits").textContent = `${creditsLeft.toLocaleString()} Claude credits`;
+  const working = timeline.some((t) => t.status === "now");
+  const designing = timeline.find((t) => t.home && t.status === "now");
+  $("#ask-status").textContent = working ? "Working…" : timeline.length ? "Done" : "";
+  const pages = ["Home", ...pagesMade];
+  $("#stage").innerHTML = `
+    <div class="chips" aria-label="Pages">${pages.map((p) => `<span class="chip" aria-pressed="${p === "Home"}">${esc(p)}</span>`).join("")}</div>
+    <div class="card">
+      <div class="preview-head"><span class="dotrow" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">yourname.github.io/${esc(fresh ? githubName ?? slug(state.name) : created.repo.split("/")[1])}</span></div>
+      ${
+        fresh && homeDone
+          ? previewHTML()
+          : `<div class="starter"><b>${esc(created.name)}</b>${fresh ? "Replace this with what your business does, in a sentence or two." : `Your site from ${esc(created.repo)}, with a simple homepage until you bring its pages in.`}</div>`
+      }
+      ${designing ? `<div class="building">Claude is designing your homepage from your answers…<br>It takes a few minutes. You can leave this page; it carries on.</div>` : ""}
+    </div>`;
+  $("#ask-log").innerHTML = timeline
+    .map((t) => {
+      if (t.kind === "me")
+        return `<div class="msg-me">Set up my new site for ${esc(created.name)}, from my setup answers.
+          <br><button type="button" class="link-btn" data-e="request">${showRequest ? "Hide" : "Show"} the full request</button>
+          ${showRequest ? `<pre>${esc(buildRequest())}</pre>` : ""}</div>`;
+      if (t.kind === "act")
+        return `<div class="act ${t.status}"><span class="mark">${t.status === "done" ? "✓" : ""}</span><div>${esc(t.label)}${t.detail ? `<small>${esc(t.detail)}</small>` : ""}</div></div>`;
+      return `<div class="reply">${t.html}</div>`;
+    })
+    .join("");
+  const log = $("#ask-log");
+  log.scrollTop = log.scrollHeight;
+}
+
+function later(fn, ms) {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  timers.push(setTimeout(fn, reduce ? Math.min(ms, 300) : ms));
+}
+
+function startTimeline() {
+  creditsLeft = 10000;
+  homeDone = false;
+  pagesMade = [];
+  showRequest = false;
+  if (created.kind === "existing") {
+    timeline = [{ kind: "reply", html: `<p><b>${esc(created.repo)}</b> is now one of your sites, with a simple homepage.</p><p>Bring its old pages in from Pages → "Bring in a page from another website", or tell me about your business and I'll design it.</p>` }];
+    return render();
+  }
+  const steps = [
+    { label: "Saving your answers", detail: "Business info, opening hours, logo, photos and your site profile", ms: 1000, credits: 0 },
+    { label: "Designing your homepage", detail: "A site's first design is written by Opus 5.5", ms: 3200, credits: 420, home: true },
+    { label: "Designing a header and footer to match", detail: `Your name, the menu and a ${state.action || "Book a table"} button; address, hours and links`, ms: 2000, credits: 260 },
+    ...PAGES.slice(1).map(([title, , purpose]) => ({ label: `Writing the ${title} page`, detail: purpose, ms: 1400, credits: 140, page: title })),
+    { label: "Adding the pages to the menu", detail: "", ms: 800, credits: 20 },
+  ];
+  timeline = [{ kind: "me" }];
+  const run = (i) => {
+    if (i >= steps.length) {
+      const samples = state.dishes.some((d) => d.sample && d.name);
+      const demoPhotos = state.photos.some((p) => p.demo);
+      timeline.push({
+        kind: "reply",
+        html: `<p>Your site is ready to check: a homepage, a matching header and footer, and ${PAGES.length - 1} more pages, all in the menu.</p>
+          ${samples || demoPhotos ? `<p>Before you publish, replace ${[samples && "the dishes marked as samples", demoPhotos && "the demo photos"].filter(Boolean).join(" and ")} with your own.</p>` : ""}
+          <p>Nothing is live yet. Publish when you're happy with it.</p>
+          <div class="chips">${samples ? `<span class="chip">Replace the sample dishes</span>` : ""}<span class="chip">Publish my site</span></div>`,
+      });
+      return render();
+    }
+    const s = steps[i];
+    const item = { kind: "act", label: s.label, detail: s.detail, status: "now", home: s.home };
+    timeline.push(item);
+    render();
+    later(() => {
+      item.status = "done";
+      creditsLeft -= s.credits;
+      if (s.home) homeDone = true;
+      if (s.page) pagesMade.push(s.page);
+      run(i + 1);
+    }, s.ms);
+  };
+  later(() => run(0), 600);
+  render();
+}
+
+/* ---------------------------------------------------------------- events */
+
+const wizard = $("#wizard");
+
+wizard.addEventListener("input", (e) => {
+  const el = e.target;
+  if (!el.dataset.bind) return;
+  setPath(el.dataset.bind, el.type === "checkbox" ? el.checked : el.value);
+  state.demo = false;
+  if (el.dataset.bind === "cuisine") wizard.querySelectorAll('[data-chip="cuisine"]').forEach((c) => c.setAttribute("aria-pressed", c.dataset.value === el.value));
+  if (el.dataset.rerender !== undefined) return renderWizard(), renderPreview();
+  if (el.dataset.bind.startsWith("hours")) $("#hours-text").textContent = `Shown as: ${hoursText()}`;
+  if (el.dataset.bind === "brief" || el.dataset.bind === "name" || el.dataset.bind === "what") updateBriefStatus();
+  const next = $("#next");
+  if (next) {
+    next.disabled = !STEPS[step].valid();
+  }
+  if (el.dataset.bind === "name") {
+    const hint = el.parentElement.querySelector(".hint");
+    if (hint) hint.textContent = `Web address: yourname.github.io/${slug(state.name)}`;
+  }
+  renderPreview();
+});
+wizard.addEventListener("change", (e) => {
+  const el = e.target;
+  if (el.id === "f-logo") {
+    const f = el.files?.[0];
+    if (f && f.size <= 2 * 1024 * 1024) state.logo = { name: f.name, url: URL.createObjectURL(f) };
+    render();
+  } else if (el.id === "f-photos") {
+    const files = [...(el.files ?? [])].filter((f) => f.size <= 5 * 1024 * 1024);
+    state.photos = [...state.photos.filter((p) => !p.demo), ...files.map((f) => ({ label: f.name, url: URL.createObjectURL(f), demo: false }))].slice(0, 6);
+    render();
+  }
+});
+wizard.addEventListener("submit", (e) => e.preventDefault());
+wizard.addEventListener("click", (e) => {
+  const chip = e.target.closest("[data-chip]");
+  if (chip) {
+    const key = chip.dataset.chip;
+    const value = chip.dataset.value;
+    if (key === "events") state.events = value === "Yes";
+    else if (chip.dataset.multi !== undefined) state[key] = state[key].includes(value) ? state[key].filter((x) => x !== value) : [...state[key], value];
+    else state[key] = state[key] === value ? "" : value;
+    state.demo = false;
+    return render();
+  }
+  const btn = e.target.closest("[data-action], [data-goto], [data-tab], [data-ask]");
+  if (!btn) return;
+  if (btn.dataset.goto) return (step = STEPS.findIndex((x) => x.id === btn.dataset.goto)), render();
+  if (btn.dataset.ask) {
+    const item = analysis.plan.find((p) => p.id === btn.dataset.ask);
+    if (item) item.status = "ask";
+    rebuildSteps();
+    step = STEPS.findIndex((x) => x.id === btn.dataset.ask);
+    return render();
+  }
+  if (btn.dataset.tab) return (reviewTab = btn.dataset.tab), renderWizard();
+  const i = Number(btn.dataset.index);
+  switch (btn.dataset.action) {
+    case "next":
+      if (!STEPS[step].valid()) return;
+      if (step === STEPS.length - 1) return create();
+      skipped.delete(STEPS[step].id);
+      leave(STEPS[step].id);
+      step++;
+      break;
+    case "skip": {
+      const id = STEPS[step].id;
+      if (id === "analysis") {
+        // No questions: straight to checking the answers, each question left for Claude to ask later.
+        STEPS.filter((x) => QUESTION_IDS.includes(x.id)).forEach((x) => skipped.add(x.id));
+        step = STEPS.length - 1;
+        break;
+      }
+      if (QUESTION_IDS.includes(id)) skipped.add(id);
+      leave(id);
+      step++;
+      break;
+    }
+    case "back":
+      if (step === 0) {
+        view = "dashboard";
+        modal = true;
+      } else step--;
+      break;
+    case "add-dish":
+      if (state.dishes.length < 6) state.dishes.push({ name: "", desc: "", price: "", sample: false });
+      break;
+    case "remove-dish":
+      state.dishes.splice(i, 1);
+      if (!state.dishes.length) state.dishes.push({ name: "", desc: "", price: "", sample: false });
+      break;
+    case "remove-logo":
+      state.logo = null;
+      break;
+    case "remove-photo":
+      state.photos.splice(i, 1);
+      break;
+  }
+  render();
+  $("#step-title")?.focus?.();
+});
+
+function startCreating() {
+  view = "creating";
+  modal = false;
+  creating = 0;
+  render();
+  const stages = created.kind === "existing" ? IMPORT_STAGES : CREATE_STAGES;
+  const tick = () => {
+    creating++;
+    if (creating < stages.length) {
+      renderWizard();
+      later(tick, 1100);
+    } else {
+      creating = null;
+      view = "editor";
+      startTimeline();
+    }
+  };
+  later(tick, 1100);
+}
+
+function create() {
+  created = { kind: "template", name: state.name.trim() || "My Website" };
+  startCreating();
+}
+
+/* -------------------------------------------- dashboard, window and editor events */
+
+$("#dashboard").addEventListener("click", (e) => {
+  const action = e.target.closest("[data-d]")?.dataset.d;
+  if (action === "create") {
+    modal = true;
+    render();
+    $("#m-name")?.focus();
+  } else if (action === "edit") {
+    view = "editor";
+    render();
+  }
+});
+
+const modalCard = $("#modal-card");
+modalCard.addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.dataset.mBind === "name") {
+    state.name = el.value;
+    state.demo = false;
+    const hint = $("#m-hint");
+    if (hint) hint.innerHTML = `Its web address will be <b>yourname.github.io/${esc(githubName ?? slug(state.name))}</b>. You can use your own domain name later.`;
+    const gh = $("#m-gh");
+    if (gh && githubName === null) gh.value = slug(state.name);
+    const next = $("#m-next");
+    if (next) next.disabled = !state.name.trim();
+  } else if (el.dataset.mBind === "github") {
+    githubName = el.value.trim() || null;
+    const hint = $("#m-hint");
+    if (hint) hint.innerHTML = `Its web address will be <b>yourname.github.io/${esc(githubName ?? slug(state.name))}</b>. You can use your own domain name later.`;
+  }
+});
+modalCard.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-m]");
+  if (!btn) return;
+  switch (btn.dataset.m) {
+    case "close":
+      modal = false;
+      break;
+    case "source":
+      source = btn.dataset.value;
+      break;
+    case "repo":
+      pickedRepo = btn.dataset.value;
+      break;
+    case "continue":
+      if (!state.name.trim()) return;
+      goAfter("name");
+      view = "setup";
+      step = 0;
+      break;
+    case "skip-name":
+      // No name yet: the site starts as "My Website" and the editor asks for one later.
+      state.name = "";
+      goAfter("name");
+      view = "setup";
+      step = 0;
+      break;
+    case "use-repo":
+      if (!pickedRepo) return;
+      created = { kind: "existing", name: state.name.trim() || pickedRepo.split("/")[1], repo: pickedRepo };
+      return startCreating();
+  }
+  render();
+});
+$("#modal").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) (modal = false), render();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && view === "dashboard" && modal) (modal = false), render();
+});
+
+$("#editor").addEventListener("click", (e) => {
+  if (e.target.closest("[data-e]")?.dataset.e === "request") {
+    showRequest = !showRequest;
+    renderEditor();
+  }
+});
+
+function startOver(next) {
+  timers.forEach(clearTimeout);
+  timers = [];
+  state = next();
+  view = "dashboard";
+  modal = false;
+  step = 0;
+  creating = null;
+  created = null;
+  source = "template";
+  githubName = null;
+  pickedRepo = "";
+  timeline = [];
+  skipped = new Set();
+  aiRead = null;
+  analysis = { done: false, running: false, phase: 0, signature: "", plan: [], findings: [], read: null };
+  rebuildSteps();
+  render();
+}
+
+$("#fill-demo").addEventListener("click", () => {
+  if (view === "editor" || view === "creating") return startOver(demoState);
+  state = demoState();
+  render();
+});
+$("#clear-all").addEventListener("click", () => startOver(emptyState));
+$("#restart").addEventListener("click", () => startOver(demoState));
+
+render();
+</script>
+</body>
+</html>
