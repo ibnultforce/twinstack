@@ -1,4 +1,21 @@
 {
   "_comment": "Code from other services (Google Analytics, a chat widget…), added to published pages. Each item: name, code, place (head or body: the end of the page), pages (\"all\", or a list of addresses), on.",
-  "items": []
+  "items": [
+    {
+      "name": "Test",
+      "code": "<script>This is a test</script>",
+      "place": "head",
+      "pages": [
+        "/"
+      ],
+      "on": true
+    },
+    {
+      "name": "Google Analytics",
+      "code": "<!-- Google tag (gtag.js) -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-ABC1234\"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-ABC1234');\n</script>",
+      "place": "head",
+      "pages": "all",
+      "on": true
+    }
+  ]
 }
