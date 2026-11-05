@@ -4,7 +4,7 @@
     {
       "name": "Test",
       "code": "<script>This is a test</script>",
-      "place": "head",
+      "place": "body",
       "pages": [
         "/"
       ],
